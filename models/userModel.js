@@ -1,6 +1,5 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const { use, options } = require('../routes/jobRoutes')
 
 
 
@@ -56,19 +55,11 @@ const userSchema = new mongoose.Schema({
         type : String,
         enum : ['recruiter' , 'candidate' ,  'admin'],
         default : 'candidate'
+    },
+    active : {
+        type : Boolean,
+        default : true
     }
 }, { timestamps: true })
-
-
-
-
-
-
-
-
-
-
-    
-    
 
 module.exports = mongoose.model('Users' , userSchema)

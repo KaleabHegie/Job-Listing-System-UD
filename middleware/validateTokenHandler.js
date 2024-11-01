@@ -1,69 +1,54 @@
-const asyncHandler = require('express-async-handler')
-const jwt = require('jsonwebtoken')
-
+const asyncHandler = require('express-async-handler');
+const jwt = require('jsonwebtoken');
 
 const validateToken = asyncHandler(async (req, res, next) => {
-    let token
-    let authHeader = req.headers.authorization || req.headers.Authorization
+    let token;
+    const authHeader = req.headers.authorization || req.headers.Authorization;
+
     if (authHeader && authHeader.startsWith('Bearer')) {
-        token = authHeader.split(' ')[1]
+        token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) {
-                res.status(401)
-                throw new Error('Not authorized! Invalid token.')
+                res.status(401);
+                throw new Error('Not authorized! Invalid token.');
             }
-            req.user = decoded.user 
-            next()
-        })
+            req.user = decoded.user;
+            next();
+        });
     } else {
-        res.status(401)
-        throw new Error('Not authorized, no token')
+        res.status(401);
+        throw new Error('Not authorized, no token');
     }
-})
+});
 
+// Generic role validation middleware
+const validateRole = (allowedRoles) => {
+    return asyncHandler((req, res, next) => {
+        validateToken(req, res, () => {
+            if (allowedRoles.includes(req.user.role)) {
+                next();
+            } else {
+                res.status(403);
+                throw new Error('Forbidden: You do not have access to this resource');
+            }
+        });
+    });
+};
 
-
-
-const validateAdmin = asyncHandler((req, res, next) => {
-    validateToken(req, res, () => {
-        
-        if (req.user.role === 'admin') {
-            next()  
-        } else {
-            res.status(403)
-            throw new Error('Forbidden: You do not have access to this resource')
-        }
-    })
-})
-
-
-const validateRecruiter = asyncHandler((req, res, next) => {
-    validateToken(req, res, () => {
-        if (req.user.role === 'recruiter') {
-            next()  
-        } else {
-            res.status(403)
-            throw new Error('Forbidden: You do not have access to this resource')
-        }
-         
-    })
-})
-
-
-const validateCandidate = asyncHandler((req, res, next) => {
-    validateToken(req, res, () => {
-        if (req.user.role === 'candidate') {
-            next() 
-        } else {
-            res.status(403)
-            throw new Error('Forbidden: You do not have access to this resource')
-        }
-    })
-})
+// Specific validations
+const validateAdmin = validateRole(['admin']);
+const validateRecruiter = validateRole(['recruiter']);
+const validateRecruiterOrAdmin = validateRole(['recruiter', 'admin']);
+const validateCandidateOrAdmin = validateRole(['candidate', 'admin']);
+const validateRecruiterOrCandidate = validateRole(['recruiter', 'candidate']);
+const validateCandidate = validateRole(['candidate']);
 
 module.exports = {
-    validateToken,  
-    validateRecruiter,  
-    validateCandidate  ,
-    validateAdmin
-}
+    validateToken,
+    validateRecruiter,
+    validateCandidate,
+    validateAdmin,
+    validateRecruiterOrAdmin,
+    validateCandidateOrAdmin,
+    validateRecruiterOrCandidate
+};

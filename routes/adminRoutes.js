@@ -1,21 +1,15 @@
-const express = require('express')
-const router = express.Router()
-const {getAllUsers , updateUser , deleteUser , getSingleUser } = require('../controllers/adminController')
-const { validateAdmin } = require('../middleware/validateTokenHandler')
-const {getApplication , getAllApplication } = require('../controllers/adminController')
+const express = require('express');
+const adminController = require('../controllers/adminController');
+const router = express.Router();
+const { validateAdmin, validateToken } = require('../middleware/validateTokenHandler');
 
 
+router.post('/register_recruiter',  validateAdmin,adminController.registerRecruiter);
+router.get('/all_users', validateAdmin,  adminController.getAllUsers);
+router.get('/get_user/:id', validateAdmin,  adminController.getUserById);
+router.get('/all_candidates', validateAdmin,  adminController.getAllCandidates);
+router.get('/get_candidate/:id', validateAdmin,  adminController.getCandidateById);
+router.patch('/deactivate_user/:id/deactivate', validateAdmin,  adminController.deactivateUser);
+router.patch('/activate_user/:id/activate', validateAdmin,  adminController.activateUser);
 
-router.route('/get_all_users').get(validateAdmin , getAllUsers)
-router.route('/get_single_user/:id').get(validateAdmin , getSingleUser)
-router.route('/update_user/:id').put(validateAdmin , updateUser)
-router.route('/delete_user/:id').delete(validateAdmin, deleteUser)
-
-
-router.route('/get_all_application').get(validateAdmin , getAllApplication)
-router.route('/get_single_application/:id').get(validateAdmin , getApplication)
-
-
-
-
-module.exports = router
+module.exports = router;

@@ -1,7 +1,5 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const { use, options } = require('../routes/jobRoutes')
-const Users = require('./userModel');
 
 
 const companySchema = new mongoose.Schema({
@@ -55,7 +53,11 @@ const companySchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
         required: [true, 'Please provide recruiters'],
-    }]
+    }],
+    active : {
+        type : Boolean,
+        default : true
+    },
 }, { timestamps: true })
 
 

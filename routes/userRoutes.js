@@ -1,12 +1,9 @@
-const express = require('express')
-const router = express.Router()
-const { registerUser ,  updateProfile  } = require('../controllers/userController')
-const { validateCandidate, validateToken } = require('../middleware/validateTokenHandler')
+const express = require('express');
+const userController = require('../controllers/userController');
+const router = express.Router();
 
 
-router.route('/register_user').post(registerUser)
-router.route('/update_profile').put( validateToken , updateProfile)
+router.post('/register', userController.register);
+router.post('/login', userController.login);
 
-
-
-module.exports = router
+module.exports = router;

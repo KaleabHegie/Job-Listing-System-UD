@@ -1,106 +1,139 @@
-const asyncHandler = require('express-async-handler');
-const Users = require('../models/userModel');
 const Candidate = require('../models/candidateModel');
-const Application = require('../models/applicationModel');
+const Users = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
+// Controller for admin actions on users
+const adminController = {
 
 
 
 
-//@desc Get all users
-//@route GET /api/users
-//@access Public
-const getAllUsers = asyncHandler( async (req, res) => {
-    const users = await Users.find()
-    res.status(200).json(users)
-})
+    registerRecruiter : async (req, res) => {
+        try {
+            const { first_name, last_name, user_name, date_of_birth, email, phone, address, city, country, password, photo } = req.body;
+  
+
+            // Check if email is already registered 
+            const existingUser = await Users.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            const newUser = await Users.create({
+                first_name,
+                last_name,
+                user_name,
+                date_of_birth,
+                email,
+                phone,
+                address,
+                city,
+                country,
+                password: hashedPassword,
+                photo,
+                role : 'recruiter'
+            });
+            res.status(201).json({ message: 'User registered successfully' , user: newUser });
+        } catch (error) {
+            res.status(500).json({ message: 'Error registering user', error });
+        }
+
+    },
+    // Get all users
+    getAllUsers: async (req, res) => {
+        try {
+            const users = await Users.find();
+            res.status(200).json(users);
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving users', error });
+        }
+    },
 
 
+    getAllCandidates: async (req, res) => {
+        try {
+            const users = await Candidate.find();
+            res.status(200).json(users);
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving candidates', error });
+        }
+    },
+    
+
+    // Get specific user information
+    getUserById: async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const user = await Users.findById(userId);
+            
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            res.status(200).json(user);
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving user', error });
+        }
+    },
 
 
+    getCandidateById: async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const user = await Candidate.findById(userId);
+            
+            if (!user) {
+                return res.status(404).json({ message: 'Candidate not found' });
+            }
 
-//@desc Get a single user
-//@route GET /api/users/:id
-//@access Public
-const getSingleUser = asyncHandler( async (req, res) => {
-    const user = await Users.findById(req.params.id)
-    if (!user) {
-        res.status(400)
-        throw new Error('User not found')
+            res.status(200).json(user);
+        } catch (error) {
+            res.status(500).json({ message: 'Error retrieving candidate', error });
+        }
+    },
+
+    // Deactivate a user
+    deactivateUser: async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const user = await Candidate.findByIdAndUpdate(
+                userId,
+                { active: false },
+                { new: true }
+            );
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            res.status(200).json({ message: 'User deactivated successfully', user });
+        } catch (error) {
+            res.status(500).json({ message: 'Error deactivating user', error });
+        }
+    },
+
+    // Activate a user
+    activateUser: async (req, res) => {
+        try {
+            const userId = req.params.id;
+            const user = await Candidate.findByIdAndUpdate(
+                userId,
+                { active: true },
+                { new: true }
+            );
+
+            if (!user) {
+                return res.status(404).json({ message: 'User not found' });
+            }
+
+            res.status(200).json({ message: 'User activated successfully', user });
+        } catch (error) {
+            res.status(500).json({ message: 'Error activating user', error });
+        }
     }
-    res.status(200).json(user)
-})
+};
 
-
-
-
-//@desc Update a user
-//@route PUT /api/users/:id
-//@access Public
-const updateUser = asyncHandler( async (req, res) => {
-    
-    const user = await Users.findById(req.params.id)
-    if (!user) {
-        res.status(400)
-        throw new Error('User not found')
-    }
-    
-    const updatedUser = await Users.findByIdAndUpdate(req.params.id, req.body, {
-        new: true
-    })
-    
-    
-    res.status(200).json(updatedUser)
-})
-
-
-
-
-//@desc Delete a user
-//@route DELETE /api/users/:id
-//@access Public
-const deleteUser = asyncHandler( async (req, res) => {    
-    const user = await Users.findById(req.params.id)
-    if (!user) {
-        res.status(400)
-        throw new Error('User not found')
-    }
-    
-    await user.deleteOne()
-    res.status(200).json(user)
-})
-
-
-
-
-const getApplication = asyncHandler(async (req, res) => {
-    const id = req.params.id;
-    const applications = await Application.findById(id)
-    console.log(applications)
-    res.status(200).json(applications);
-});
-
-
-
-const getAllApplication = asyncHandler(async (req, res) => {
-
-    const applications = await Application.find()
-
-    res.status(200).json(applications);
-});
-
-
-
-
-
-
-module.exports = {  
-    getAllUsers,
-    getSingleUser,
-    updateUser,
-    deleteUser,
-    getAllApplication,
-    getApplication
-
-}
+module.exports = adminController;

@@ -1,16 +1,10 @@
 const express = require('express');
+const userController = require('../controllers/candidateController');
 const router = express.Router();
-const {createPersonalProject,getPersonalProjects,getPersonalProject,updatePersonalProject,deletePersonalProject} = require('../controllers/candidateController');
-const { validateAdmin , validateCandidate , validateRecruiter } = require('../middleware/validateTokenHandler');
+const { validateAdmin, validateToken } = require('../middleware/validateTokenHandler');
 
-router.route('/:id/personalProjects')
-    .post(createPersonalProject)  
-    .get(getPersonalProjects);    
-
-router.route('/:id/personalProjects/:projectId')
-    .get(getPersonalProject)      
-    .put(updatePersonalProject)   
-    .delete(deletePersonalProject); 
-
+// Route to get user profile
+router.get('/profile', validateToken ,userController.getProfile);
+router.put('/edit_profile', validateToken , userController.editProfile);
 
 module.exports = router;

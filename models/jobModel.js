@@ -1,6 +1,5 @@
 const express = require('express')
 const mongoose = require('mongoose')
-const { use, options } = require('../routes/jobRoutes')
 
 
 const jobSchema = new mongoose.Schema({
@@ -24,28 +23,36 @@ const jobSchema = new mongoose.Schema({
         type : String,
         required : [true , 'Please provide experience'],
     },
-    skills: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Skill'
+    skills : [{
+        name: {
+            type: String,
+            required: [true, 'Please provide name'],
+        },
     }],
     sector : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : 'Sector',
+        type : String,
         required : [true , 'Please provide sector'],
     },
     position : {
         type : String,
         required : [true , 'Please provide position'],
     },
-    status : {
+    requirements : {
         type : String,
-        enum : ['interview' , 'declined' , 'pending'],
-        default : 'pending',
+        required : [true , 'Please provide requirements'],
+    },
+    location : {
+        type : String,
+        required : [true , 'Please provide location'],
     },
     createdBy : {
         type : mongoose.Schema.Types.ObjectId,
-        ref : 'Recruiter',
+        ref : 'Users',
         required : [true , 'Please provide user'],
+    },
+    active : {
+        type : Boolean,
+        default : true
     }
 })
 

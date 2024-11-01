@@ -1,149 +1,115 @@
-const asyncHandler = require('express-async-handler');
 const Users = require('../models/userModel');
 const Candidate = require('../models/candidateModel');
 const bcrypt = require('bcrypt');
-const { check , validationResult } = require('express-validator');
+const jwt = require('jsonwebtoken');
+const asyncHandler = require('express-async-handler')
 
+const userController = {
+    // Register a new user
+    register: async (req, res) => {
+        try {
+            const { first_name, last_name, user_name, date_of_birth, email, phone, address, city, country, password, photo, role } = req.body;
 
+            // Check if email is already registered
+            const existingUser = await Users.findOne({ email });
+            if (existingUser) {
+                return res.status(400).json({ message: 'Email already in use' });
+            }
 
-//@desc register  users
-//@route register /api/users/register_user
-//@access Public
-const registerUser = [
-    check('first_name')
-    .trim()
-    .notEmpty().withMessage('First name is required')
-    .isLength({ min: 2 }).withMessage('First name must be at least 2 characters long'),
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
 
-   check('last_name')
-    .trim()
-    .notEmpty().withMessage('Last name is required')
-    .isLength({ min: 2 }).withMessage('Last name must be at least 2 characters long'),
+            const newUser = await Users.create({
+                first_name,
+                last_name,
+                user_name,
+                date_of_birth,
+                email,
+                phone,
+                address,
+                city,
+                country,
+                password: hashedPassword,
+                photo
+            });
 
-  check('user_name')
-    .trim()
-    .notEmpty().withMessage('Username is required')
-    .isLength({ min: 3 }).withMessage('Username must be at least 3 characters long'),
+            const newCandidate = await Candidate.create({
+                user_id: newUser._id, // Associate candidate with the user
+                skill: [], // You can add skills if needed
+                languages: [], // You can add languages if needed
+                certificates: [], // You can add certificates if needed
+                experiences: [], // You can add experiences if needed
+                educations: [], // You can add educations if needed
+                personalProjects: [], // You can add personal projects if needed
+                active: true // Default to active
+            });
 
-  check('date_of_birth')
-    .notEmpty().withMessage('Date of birth is required')
-    .isDate().withMessage('Date of birth must be a valid date'),
+            res.status(201).json({ message: 'User registered successfully', user: newUser });
+        } catch (error) {
+            res.status(500).json({ message: 'Error registering user', error });
+        }
+    },
 
-  check('email')
-    .notEmpty().withMessage('Email is required')
-    .isEmail().withMessage('Email must be valid'),
+    // Login a user
+    // login: async (req, res) => {
+    //     try {
+    //         const { email, password } = req.body;
+    //         const user = await Users.findOne({ email });
 
-  check('phone')
-    .notEmpty().withMessage('Phone number is required')
-    .isMobilePhone().withMessage('Phone number must be valid'),
+    //         if (!user) {
+    //             return res.status(404).json({ message: 'User not found' });
+    //         }
 
-  check('address')
-    .trim()
-    .notEmpty().withMessage('Address is required'),
+    //         console.log(user)
 
-  check('city')
-    .trim()
-    .notEmpty().withMessage('City is required'),
+    //         // Verify password
+    //         const isPasswordValid = await bcrypt.compare(password, user.password);
+    //         if (!isPasswordValid) {
+    //             return res.status(401).json({ message: 'Invalid password' });
+    //         }
 
-  check('country')
-    .trim()
-    .notEmpty().withMessage('Country is required'),
+    //         // Generate JWT token
+    //         const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
-  check('password')
-    .notEmpty().withMessage('Password is required')
-    .isLength({ min: 6 }).withMessage('Password must be at least 6 characters long'),
+    //         res.status(200).json({ message: 'Login successful', token });
+    //     } catch (error) {
+    //         res.status(500).json({ message: 'Error logging in', error });
+    //     }
+    // },
 
-  check('photo')
-    .optional() // Assuming photo is optional
-    .isURL().withMessage('Photo must be a valid URL'),
-
-  check('role')
-    .optional()
-    .isIn(['admin', 'candidate', 'recruiter']).withMessage('Role must be either admin, candidate, or recruiter'),
+    login : asyncHandler(async (req, res) => {
+        const { email, password } = req.body
     
-    asyncHandler(async (req, res) => {
-
-    const { first_name, last_name, user_name, date_of_birth, email, phone, address, city, country, password, photo , role } = req.body;
-
-    if (!first_name || !last_name || !user_name || !date_of_birth || !email || !phone || !password || !photo) {
-        res.status(400);
-        throw new Error('Please provide all required fields');
-    }
-
-    const userAvailable = await Users.findOne({ email });
-    if (userAvailable) {
-        res.status(400);
-        throw new Error('User already exists');
-    }
-
-    const hashPassword = await bcrypt.hash(password, 10);
-
-    const user = await Users.create({
-        first_name,
-        last_name,
-        user_name,
-        date_of_birth,
-        email,
-        phone,
-        address,
-        city,
-        country,
-        password: hashPassword,
-        photo,
-        role
-    });
-
-    if (user.role === 'candidate' ) {
-        await Candidate.create({
-            user_id: user._id,
-            skill: []  
-        });
-    }
-
-    res.status(201).json({
-        message: 'User registered successfully',
-        data: user
-    });  
-})]
-
-
-
-
-//@desc Update a user
-//@route PUT /api/users/:id
-//@access Public
-const updateProfile = asyncHandler( async (req, res) => {
+        if (!email || !password) {
+            res.status(400)
+            throw new Error('Please provide email and password')
+        }
     
-    const userId = req.user.id; 
-
-    const candidate = await Candidate.findOne({ user_id: userId });
-    const { candidateId } = candidate._id;
-
-    if(req.body.password) {
-        const { password } = req.body;
-        const hashPassword = await bcrypt.hash(password, 10);
-    }
+        // Add `await` here to wait for the user to be fetched
+        const user = await Users.findOne({ email })
     
-    if (!candidate) {
-        res.status(400)
-        throw new Error('User not found')
-    }
+        if (user && (await bcrypt.compare(password, user.password))) {
+            const accessToken = jwt.sign(
+                {
+                    user: {
+                        username: user.user_name, // Use `user_name` to match your schema
+                        email: user.email,
+                        id: user._id,
+                        role : user.role
+                    }
+                },
+                process.env.ACCESS_TOKEN_SECRET,
+                {
+                    expiresIn: '15m'
+                }
+            )
     
-    const updatedUser = await Users.findByIdAndUpdate(userId, req.body, {
-        new: true
+            res.status(200).json({ accessToken })
+        } else {
+            res.status(401)
+            throw new Error('Invalid email or password')
+        }
     })
-    
-    
-    res.status(200).json({
-        message : "Profile updated successfully",
-        data : updatedUser
-        
-})
-})
+};
 
-
-
-module.exports = {  
-    registerUser,
-    updateProfile
-}
+module.exports = userController;
