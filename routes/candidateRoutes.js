@@ -5,6 +5,8 @@ const { validateAdmin, validateToken } = require('../middleware/validateTokenHan
 
 // Route to get user profile
 router.get('/profile', validateToken ,userController.getProfile);
-router.put('/edit_profile', validateToken , userController.editProfile);
+router.patch('/edit_profile', validateToken , userController.editProfile);
+router.get('/applied_jobs', validateToken, userController.appliedJobs);
+router.get('/bookmarked_jobs', validateToken, userController.bookmarkedJobs);
 
 module.exports = router;

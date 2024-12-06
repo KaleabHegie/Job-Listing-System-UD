@@ -3,20 +3,20 @@ const Job = require('../models/jobModel'); // Adjust the path according to your 
 
 // Create a new job
 const createJob = asyncHandler(async (req, res) => {
-    const { company, title, description, vacancy, experience, skills, sector, position  , requirements , location} = req.body;
+    const { company, title, description, vacancy , skills, sector , salary , requirements , location} = req.body;
 
     const job = new Job({
         company,
         title,
         description,
         vacancy,
-        experience,
+        salary,
         skills,
         sector,
-        position,
         requirements,
         location,
-        createdBy: req.user.id, // Assuming req.user contains the authenticated user information
+        createdBy: '67249b63d9afc7ba0cefdefb'
+        //req.user.id
     });
 
     const savedJob = await job.save();
@@ -25,7 +25,10 @@ const createJob = asyncHandler(async (req, res) => {
 
 // Get all jobs
 const getAllJobs = asyncHandler(async (req, res) => {
-    const jobs = await Job.find().populate('createdBy', 'user_name'); // Populating createdBy to get user name
+    const jobs = await Job.find()
+    .populate('sector', 'name')
+    .populate('createdBy', 'user_name')
+    .populate('company', 'name'); 
     res.status(200).json({ message : 'All jobs' , data : jobs});
 });
 
@@ -51,10 +54,10 @@ const updateJob = asyncHandler(async (req, res) => {
     }
 
     // Check if the user is authorized to update this job
-    if (job.createdBy.toString() !== req.user.id) {
-        res.status(403);
-        throw new Error('Not authorized to update this job');
-    }
+    // if (job.createdBy.toString() !== req.user.id) {
+    //     res.status(403);
+    //     throw new Error('Not authorized to update this job');
+    // }
 
     // Update job details
     const updatedJob = await Job.findByIdAndUpdate(req.params.id, req.body, { new: true });
@@ -71,12 +74,12 @@ const deleteJob = asyncHandler(async (req, res) => {
     }
 
     // Check if the user is authorized to delete this job
-    if (job.createdBy.toString() !== req.user.id) {
-        res.status(403);
-        throw new Error('Not authorized to delete this job');
-    }
+    // if (job.createdBy.toString() !== req.user.id) {
+    //     res.status(403);
+    //     throw new Error('Not authorized to delete this job');
+    // }
 
-    await job.remove();
+    await job.deleteOne();
     res.status(204).json({ message: 'Job removed' });
 });
 

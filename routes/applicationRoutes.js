@@ -4,9 +4,11 @@ const { validateRecruiter, validateCandidate , validateToken , validateRecruiter
 const router = express.Router();
 
 router.post('/apply/:job_id',  validateCandidate , applicationController.createApplication);
-router.get('/all_applications', validateRecruiter , applicationController.getAllApplications);
+router.post('/bookmark/:job_id',  validateCandidate , applicationController.createBookmark);
+router.get('/all_applications' , applicationController.getAllApplications);
 router.get('/get_application/:id', validateRecruiterOrCandidate , applicationController.getApplicationById);
 router.put('/update_application/:id', validateCandidate , applicationController.updateApplicationStatus);
 router.delete('/delete_application/:id', validateRecruiterOrCandidate , applicationController.deleteApplication);
+router.patch('/update-stat/:id', validateRecruiterOrCandidate , applicationController.updateStat);
 
 module.exports = router;

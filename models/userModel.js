@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
     },
     photo : {
         type : String,
-        required : [true , 'Please provide photo'],
+        required : false
     },
     role : {
         type : String,

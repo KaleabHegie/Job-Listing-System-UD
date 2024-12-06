@@ -1,15 +1,19 @@
 const mongoose = require('mongoose');
 
 const candidateSchema = new mongoose.Schema({
-    user_id: {
+    user: {
         type: mongoose.Schema.Types.ObjectId,
         required: [true, 'Please provide user'],
-        ref: 'User'
+        ref: 'Users'
+    },
+    about: {
+        type: String,
+        required: false,
     },
     skills : [{
         name: {
             type: String,
-            required: [true, 'Please provide name'],
+            required: [false, 'Please provide name'],
         },
     }],
     languages: [{

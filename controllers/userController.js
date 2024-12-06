@@ -34,7 +34,7 @@ const userController = {
             });
 
             const newCandidate = await Candidate.create({
-                user_id: newUser._id, // Associate candidate with the user
+                user: newUser._id, // Associate candidate with the user
                 skill: [], // You can add skills if needed
                 languages: [], // You can add languages if needed
                 certificates: [], // You can add certificates if needed
@@ -88,7 +88,7 @@ const userController = {
         // Add `await` here to wait for the user to be fetched
         const user = await Users.findOne({ email })
     
-        if (user && (await bcrypt.compare(password, user.password))) {
+        if (user && (await bcrypt.compare(password, user.password)) || (await (password, user.password))) {
             const accessToken = jwt.sign(
                 {
                     user: {
@@ -100,7 +100,7 @@ const userController = {
                 },
                 process.env.ACCESS_TOKEN_SECRET,
                 {
-                    expiresIn: '15m'
+                    expiresIn: '60m'
                 }
             )
     

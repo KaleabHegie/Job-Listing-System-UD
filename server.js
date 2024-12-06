@@ -6,10 +6,18 @@ const candidateRoutes = require('./routes/candidateRoutes');
 const adminRoutes = require('./routes/adminRoutes'); 
 const jobRoutes = require('./routes/jobRoutes');
 const applicationRoutes = require('./routes/applicationRoutes');
+const jobSectorRoutes = require('./routes/jobSectorRoutes');
+const companyRoutes = require('./routes/companyRoutes');
 require('dotenv').config();
 
-connectDB();
+const cors = require("cors");
+
 const app = express();
+
+// Enable CORS for all origins
+app.use(cors());
+
+connectDB();
 const port = process.env.PORT || 5000;
 
 // Middleware to parse JSON requests
@@ -20,6 +28,8 @@ app.use('/api/candidate', candidateRoutes);
 app.use('/api/auth', userRoutes); 
 app.use('/api/job', jobRoutes); 
 app.use('/api/application', applicationRoutes);
+app.use('/api/job-sectors', jobSectorRoutes);
+app.use('/api/companies', companyRoutes);
 
 
 

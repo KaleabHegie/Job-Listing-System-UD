@@ -7,9 +7,9 @@ const { validateAdmin, validateToken } = require('../middleware/validateTokenHan
 router.post('/register_recruiter',  validateAdmin,adminController.registerRecruiter);
 router.get('/all_users', validateAdmin,  adminController.getAllUsers);
 router.get('/get_user/:id', validateAdmin,  adminController.getUserById);
-router.get('/all_candidates', validateAdmin,  adminController.getAllCandidates);
+router.get('/all_candidates',  adminController.getAllCandidates);
 router.get('/get_candidate/:id', validateAdmin,  adminController.getCandidateById);
-router.patch('/deactivate_user/:id/deactivate', validateAdmin,  adminController.deactivateUser);
-router.patch('/activate_user/:id/activate', validateAdmin,  adminController.activateUser);
+router.patch('/deactivate_user/:id/deactivate',  adminController.deactivateUser);
+router.patch('/activate_user/:id/activate',  adminController.activateUser);
 
 module.exports = router;

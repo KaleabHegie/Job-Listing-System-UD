@@ -1,65 +1,38 @@
-const express = require('express')
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
 
+const companySchema = new mongoose.Schema(
+    {
+        name: {
+            type: String,
+            required: [true, 'Company name is required'],
+        },
+        description: {
+            type: String,
+            required: [true, 'Company description is required'],
+        },
+        location: {
+            type: String,
+            required: [true, 'Company location is required'],
+        },
+        website: {
+            type: String,
+        },
+        email: {
+            type: String,
+            required: [true, 'Contact email is required'],
+        },
+        createdAt: {
+            type: Date,
+            default: Date.now,
+        },
+        phone: {
+            type: String,
+            required: [true, 'Contact email is required'],
+        },
+    },
+    {
+        timestamps: true,
+    }
+);
 
-const companySchema = new mongoose.Schema({
-    name : {
-        type : String,
-        required : [true , 'Please provide name'],
-    },
-    about : {
-        type : String,
-        required : [true , 'Please provide about'],
-    },
-    address : {
-        type : String,
-        required : [true , 'Please provide address'],
-    },
-    city : {
-        type : String,
-        required : [true , 'Please provide city'],
-    },
-    country : {
-        type : String,
-        required : [true , 'Please provide country'],
-    },
-    website : { 
-        type : String,
-        required : [true , 'Please provide website'],
-    },
-    logo : {
-        type : String,  
-        required : [true , 'Please provide logo'],
-    },
-    slogan : {
-        type : String,
-        required : [true , 'Please provide slogan'],
-    },
-    email: {
-        type: String,
-        required: [true, 'Please provide email'],
-        unique: true,
-        match: [/.+@.+\..+/, 'Please provide a valid email address'],
-    },
-    phone : {
-        type : String,
-        required : [true , 'Please provide phone'],
-    },
-    since : {
-        type : Date,
-        required : [true , 'Please provide since'],
-    },
-    recruiters: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Please provide recruiters'],
-    }],
-    active : {
-        type : Boolean,
-        default : true
-    },
-}, { timestamps: true })
-
-
-
-module.exports = mongoose.model('Company' , companySchema)
+module.exports = mongoose.model('Company', companySchema);

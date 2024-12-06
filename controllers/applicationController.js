@@ -2,18 +2,24 @@ const Application = require('../models/applicationModel'); // Adjust the path as
 const Users = require('../models/userModel');
 const Candidate = require('../models/candidateModel');
 const asyncHandler = require('express-async-handler');
+const Bookmark = require('../models/bookmarkModel');
 
 const applicationController = {
     // Create a new application
     createApplication: asyncHandler(async (req, res) => {
+       
         const { job_id } = req.params;
-        const { coverLetter } = req.body;
+        let userId
+            if (req.user._id !== undefined ){
+                userId = req.user._id 
+            }
+            else{
+                userId =  req.user.id
+            } 
 
         
-        let candidate = await Candidate.findOne({ user_id: req.user.id });
+        let candidate = await Candidate.findOne({ user : userId });
         let candidate_id = candidate._id
-
-        console.log(candidate_id , job_id)
 
         if (!candidate_id || !job_id) {
             return res.status(400).json({ message: 'Candidate ID and Job ID are required' });
@@ -22,7 +28,33 @@ const applicationController = {
         const newApplication = await Application.create({
             candidate_id,
             job_id,
-            coverLetter
+        });
+
+        res.status(201).json({ message: 'Application created successfully', application: newApplication });
+    }),
+
+    createBookmark: asyncHandler(async (req, res) => {
+       
+        const { job_id } = req.params;
+        let userId
+            if (req.user._id !== undefined ){
+                userId = req.user._id 
+            }
+            else{
+                userId =  req.user.id
+            } 
+
+        
+        let candidate = await Candidate.findOne({ user : userId });
+        let candidate_id = candidate._id
+
+        if (!candidate_id || !job_id) {
+            return res.status(400).json({ message: 'Candidate ID and Job ID are required' });
+        }
+
+        const newApplication = await Bookmark.create({
+            candidate_id,
+            job_id,
         });
 
         res.status(201).json({ message: 'Application created successfully', application: newApplication });
@@ -30,14 +62,20 @@ const applicationController = {
 
     // Get all applications
     getAllApplications: asyncHandler(async (req, res) => {
-        const applications = await Application.find().populate('candidate_id').populate('job_id');
+        const applications = await Application.find().populate({
+            path: 'candidate_id',
+            populate: { path: 'user' }, // Populate the `user` field in the `Candidate` schema
+          }).populate('job_id');
         res.status(200).json(applications);
     }),
 
     // Get a specific application by ID
     getApplicationById: asyncHandler(async (req, res) => {
         const { id } = req.params;
-        const application = await Application.findById(id).populate('candidate_id').populate('job_id');
+        const application = await Application.findById(id).populate({
+            path: 'candidate_id',
+            populate: { path: 'user' }, // Populate the `user` field in the `Candidate` schema
+          }).populate('job_id');
 
         if (!application) {
             return res.status(404).json({ message: 'Application not found' });
@@ -75,6 +113,21 @@ const applicationController = {
         }
 
         res.status(200).json({ message: 'Application deleted successfully' });
+    }),
+
+    updateStat : asyncHandler (async (req , res) => {
+        try {
+            const { id } = req.params;
+            const updatedData = req.body;
+        
+            const updatedApplication = await Application.findByIdAndUpdate(id, updatedData, {
+              new: true, // Return the updated document
+            }).populate('candidate_id.user job_id'); // Repopulate data if needed
+        
+            res.status(200).json(updatedApplication);
+          } catch (error) {
+            res.status(500).json({ message: 'Error updating application', error });
+          }
     })
 };
 
