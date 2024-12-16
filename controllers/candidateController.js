@@ -15,7 +15,7 @@ const userController = {
                 userId =  req.user.id
             } 
             const profile = await Candidate.findOne({ user: userId }).populate('user');
-            console.log(userId)
+            
             
             if (!profile) {
                 return res.status(404).json({ message: 'Profile not found' });

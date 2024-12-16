@@ -9,13 +9,16 @@ const validateToken = asyncHandler(async (req, res, next) => {
         token = authHeader.split(' ')[1];
         jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
             if (err) {
+                console.error('Token verification failed:', err);
                 res.status(401);
                 throw new Error('Not authorized! Invalid token.');
             }
+            
             req.user = decoded.user;
             next();
         });
     } else {
+        console.error('Authorization header missing or invalid');
         res.status(401);
         throw new Error('Not authorized, no token');
     }

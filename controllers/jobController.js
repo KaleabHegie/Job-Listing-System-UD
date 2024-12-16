@@ -4,6 +4,7 @@ const Job = require('../models/jobModel'); // Adjust the path according to your 
 // Create a new job
 const createJob = asyncHandler(async (req, res) => {
     const { company, title, description, vacancy , skills, sector , salary , requirements , location} = req.body;
+    console.log(req.user)
 
     const job = new Job({
         company,
@@ -15,8 +16,7 @@ const createJob = asyncHandler(async (req, res) => {
         sector,
         requirements,
         location,
-        createdBy: '67249b63d9afc7ba0cefdefb'
-        //req.user.id
+        createdBy: '6752cdc05453fe7f7730dc56'
     });
 
     const savedJob = await job.save();
